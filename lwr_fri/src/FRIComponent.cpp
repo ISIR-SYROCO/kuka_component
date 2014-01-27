@@ -184,6 +184,7 @@ void FRIComponent::updateHook() {
 					= m_msr_data.data.cmdJntPosFriOffset[i];
 			m_fri_joint_state.msrJntTrq[i] = m_msr_data.data.msrJntTrq[i];
 			m_fri_joint_state.estExtJntTrq[i] = m_msr_data.data.estExtJntTrq[i];
+			m_fri_joint_state.gravity[i] = m_msr_data.data.gravity[i];
 		}
 		m_joint_states.position.assign(m_msr_data.data.msrJntPos,
 				m_msr_data.data.msrJntPos + LBR_MNJ);
