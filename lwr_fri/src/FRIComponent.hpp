@@ -76,9 +76,10 @@ private:
 
 	lwr_fri::CartesianImpedance m_cartImp;
 
+	Eigen::Matrix<double,7,7> mass_matrix;
+
 	OutputPort<tFriKrlData> port_from_krl;
 	InputPort<tFriKrlData> port_to_krl;
-	//Eigen::Matrix<double,7,7> m_massTmp; Not correct so useless
 
 	/**
 	 * events
@@ -103,7 +104,7 @@ private:
 	//OutputPort<geometry_msgs::Pose>  m_cmdCartPosFriOffsetPort;
 	OutputPort<geometry_msgs::Wrench> port_cart_wrench_msr;
 	RTT::OutputPort<KDL::Jacobian> jacobianPort;
-	//RTT::OutputPort<Eigen::MatrixXd > massMatrixPort;
+	RTT::OutputPort<Eigen::MatrixXd > massMatrixPort;
 
 	lwr_fri::FriJointCommand m_fri_joint_command;
 	motion_control_msgs::JointPositions m_joint_pos_command;

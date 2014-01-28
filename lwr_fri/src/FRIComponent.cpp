@@ -169,6 +169,11 @@ void FRIComponent::updateHook() {
 		m_jac.data.row(3).swap(m_jac.data.row(5));
 		jacobianPort.write(m_jac);
 
+        for ( unsigned int i = 0; i < LBR_MNJ; i++)
+            for ( unsigned int j = 0; j < LBR_MNJ; j++)
+                mass_matrix(i, j) = m_msr_data.data.massMatrix[i*LBR_MNJ+j];
+        massMatrixPort.write(mass_matrix);
+
 		//Put robot and fri state on the ports(no parsing)
 		port_robot_state.write(m_msr_data.robot);
 		port_fri_state.write(m_msr_data.intf);
