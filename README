@@ -1,0 +1,22 @@
+Kuka_component
+==============
+
+Fork for ISIR of the kuka_robot_hardware component developped by KU Leuven,
+http://git.mech.kuleuven.be/robotics/kuka_robot_hardware.git
+
+Install
+=======
+
+ROS Groovy
+----------
+Assuming your ROS workspace is ~/ros_workspace:
+
+    cd ~/ros_workspace
+    rosws set -y kuka_component --git https://github.com/XDE-ISIR/kuka_component.git -v isir
+    rosws update kuka_component
+    source ~/ros_workspace/setup.bash
+
+Copy the header of the FRI package friComm.h in `kuka_component/kuka_lwr_fri` and then 
+
+    rosmake kuka_lwr_fri
+    rosmake lwr_fri
