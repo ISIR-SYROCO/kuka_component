@@ -136,12 +136,14 @@ bool FRIComponent::configureHook() {
 }
 
 bool FRIComponent::startHook() {
+	pthread_set_mode_np(PTHREAD_WARNSW, 0);
 	counter = 0;
 	m_init = true;
 	return true;
 }
 
 void FRIComponent::updateHook() {
+	pthread_set_mode_np(PTHREAD_WARNSW, 0);
 	//Read:
 	if (fri_recv() == 0) {
 
