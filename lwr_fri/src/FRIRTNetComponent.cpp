@@ -43,7 +43,7 @@ namespace lwr_fri {
 
 using namespace RTT;
 
-FRIRTNetComponent::FRIRTNetComponent(const string& name) :
+FRIRTNetComponent::FRIRTNetComponent(const std::string& name) :
 	TaskContext(name, PreOperational){
 
 	this->addAttribute("fromKRL", m_fromKRL);
@@ -75,7 +75,7 @@ FRIRTNetComponent::FRIRTNetComponent(const string& name) :
 	//this->addPort("desCartImpedance", m_cartImpedancePort);
 
 	this->addProperty("local_port", m_local_port);
-	this->addProperty("control_mode", m_control_mode).doc("1=JntPos, 2=JntVel, 3=JntTrq, 4=CartPos, 5=CartForce, 6=CartTwist");
+	this->addProperty("control_mode", m_control_mode).doc("1=JntPos, 2=JntVel, 3=JntTrq, 4=CartPos, 5=CartForce, 6=CartTwist, 7=PosTrq(object picking)");
 
 	m_jntPos.resize(LBR_MNJ);
 	m_jntVel.resize(LBR_MNJ);
@@ -252,6 +252,18 @@ void FRIRTNetComponent::updateHook() {
 				m_cmd_data.cmd.cmdFlags = FRI_CMD_TCPFT;
 				for (unsigned int i = 0; i < FRI_CART_VEC; i++)
 					m_cmd_data.cmd.addTcpFT[i] = 0.0;
+			} else if (m_control_mode == 7){
+				m_cmd_data.cmd.cmdFlags=FRI_CMD_JNTPOS;
+				m_cmd_data.cmd.cmdFlags|=FRI_CMD_JNTTRQ;
+				m_cmd_data.cmd.cmdFlags |= FRI_CMD_JNTSTIFF | FRI_CMD_JNTDAMP;
+				for (unsigned int i = 0; i < LBR_MNJ; i++){ 				
+					m_cmd_data.cmd.jntStiffness[i] = 2000;
+					m_cmd_data.cmd.jntDamping[i] = 0.7;
+				}
+				for (unsigned int i = 0; i < LBR_MNJ; i++)
+					m_cmd_data.cmd.jntPos[i] = m_msr_data.data.cmdJntPos[i];
+				for (unsigned int i = 0; i < LBR_MNJ; i++)
+					m_cmd_data.cmd.addJntTrq[i] = 0.0;
 			}
 		}
 		//Only send if state is in FRI_STATE_CMD
@@ -336,6 +348,21 @@ void FRIRTNetComponent::updateHook() {
 				  m_cmd_data.cmd.cartPos[7] = T_new.p.y();
 				  m_cmd_data.cmd.cartPos[11] = T_new.p.z();
 				}
+			}else if  (m_control_mode==7){
+				m_cmd_data.cmd.cmdFlags=FRI_CMD_JNTPOS;
+				m_cmd_data.cmd.cmdFlags|=FRI_CMD_JNTTRQ;
+				m_cmd_data.cmd.cmdFlags |= FRI_CMD_JNTSTIFF | FRI_CMD_JNTDAMP;
+				for (unsigned int i = 0; i < LBR_MNJ; i++){ 				
+					m_cmd_data.cmd.jntStiffness[i] = 2000;
+					m_cmd_data.cmd.jntDamping[i] = 0.7;
+				}
+				if (NewData == m_jntPosPort.read(m_jntPos))
+					for (unsigned int i = 0; i < LBR_MNJ; i++)
+						m_cmd_data.cmd.jntPos[i] = m_jntPos[i];
+				if (NewData == m_addJntTrqPort.read(m_jntTorques))
+					for (unsigned int i = 0; i < LBR_MNJ; i++)
+						m_cmd_data.cmd.addJntTrq[i]
+								= m_jntTorques[i];
 			}
 		}
 		

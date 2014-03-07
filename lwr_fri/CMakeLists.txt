@@ -38,6 +38,8 @@ find_package(Orocos-RTT REQUIRED ${RTT_HINTS})
 # documentation.
 include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
 
+include_directories(../kuka_lwr_fri)
+
 #common commands for building c++ executables and libraries
 find_path(RTNET_INCLUDE_DIR NAMES rtnet.h PATH_SUFFIXES rtnet/include)
 if(RTNET_INCLUDE_DIR AND ${OROCOS_TARGET} STREQUAL "xenomai" )
@@ -50,15 +52,23 @@ if(RTNET_INCLUDE_DIR AND ${OROCOS_TARGET} STREQUAL "xenomai" )
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${XENO_CFLAGS}")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${XENO_LDFLAGS}")
   orocos_component(lwr_fri src/FRIComponent.cpp) # ...you may add multiple source files
+  
+  orocos_component(lwr_fri_rt src/FRIRTNetComponent.cpp) # ...you may add multiple source files
+  
   orocos_add_compile_flags(lwr_fri ${XENO_CFLAGS})
   orocos_add_link_flags(lwr_fri ${XENO_LDFLAGS})
 else()
+
   orocos_component(lwr_fri src/FRIComponent.cpp) # ...you may add multiple source files
+  orocos_component(lwr_fri_rt src/FRIRTNetComponent.cpp) # ...you may add multiple source files
+
 endif()
 
 # Link with the ROS .msg typekit of this package
 # rtt-lwr_fri-typekit is the cmake target defined by ros_generate_rtt_typekit() above
 target_link_libraries(lwr_fri rtt-lwr_fri-typekit )
+
+target_link_libraries(lwr_fri_rt rtdm)
 
 # Generates the typekit which defines float32[7]
 orocos_typekit(lwr_fri_typekit lwr_fri-typekit.cpp)
