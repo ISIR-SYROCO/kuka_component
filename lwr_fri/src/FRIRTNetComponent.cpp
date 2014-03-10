@@ -252,11 +252,11 @@ void FRIRTNetComponent::updateHook() {
 				m_cmd_data.cmd.cmdFlags = FRI_CMD_TCPFT;
 				for (unsigned int i = 0; i < FRI_CART_VEC; i++)
 					m_cmd_data.cmd.addTcpFT[i] = 0.0;
-			} else if (m_control_mode == 7){
+			} else if (m_control_mode == 7){ // mode 7 added to silmutaneously perform joint position and torque control, joint impedance mode
 				m_cmd_data.cmd.cmdFlags=FRI_CMD_JNTPOS;
 				m_cmd_data.cmd.cmdFlags|=FRI_CMD_JNTTRQ;
 				m_cmd_data.cmd.cmdFlags |= FRI_CMD_JNTSTIFF | FRI_CMD_JNTDAMP;
-				for (unsigned int i = 0; i < LBR_MNJ; i++){ 				
+				for (unsigned int i = 0; i < LBR_MNJ; i++){
 					m_cmd_data.cmd.jntStiffness[i] = 2000;
 					m_cmd_data.cmd.jntDamping[i] = 0.7;
 				}
@@ -332,7 +332,7 @@ void FRIRTNetComponent::updateHook() {
 				  T_old.p.x(m_cmd_data.cmd.cartPos[3]);
 				  T_old.p.y(m_cmd_data.cmd.cartPos[7]);
 				  T_old.p.z(m_cmd_data.cmd.cartPos[11]);
-				  
+
 				  KDL::Frame T_new = addDelta (T_old, t, m_msr_data.intf.desiredCmdSampleTime);
 
 				  m_cmd_data.cmd.cartPos[0] = T_new.M.data[0];
@@ -348,11 +348,11 @@ void FRIRTNetComponent::updateHook() {
 				  m_cmd_data.cmd.cartPos[7] = T_new.p.y();
 				  m_cmd_data.cmd.cartPos[11] = T_new.p.z();
 				}
-			}else if  (m_control_mode==7){
+			}else if  (m_control_mode==7){ //mode 7 added, send joint position command + torque offset (joint impedance control)
 				m_cmd_data.cmd.cmdFlags=FRI_CMD_JNTPOS;
 				m_cmd_data.cmd.cmdFlags|=FRI_CMD_JNTTRQ;
 				m_cmd_data.cmd.cmdFlags |= FRI_CMD_JNTSTIFF | FRI_CMD_JNTDAMP;
-				for (unsigned int i = 0; i < LBR_MNJ; i++){ 				
+				for (unsigned int i = 0; i < LBR_MNJ; i++){
 					m_cmd_data.cmd.jntStiffness[i] = 2000;
 					m_cmd_data.cmd.jntDamping[i] = 0.7;
 				}
@@ -365,7 +365,7 @@ void FRIRTNetComponent::updateHook() {
 								= m_jntTorques[i];
 			}
 		}
-		
+
 		m_cmd_data.krl = m_toKRL;
 
 		if (0 > rt_dev_sendto(m_socket, (void*) &m_cmd_data, sizeof(m_cmd_data), 0,
