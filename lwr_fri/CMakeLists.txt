@@ -69,6 +69,7 @@ endif()
 target_link_libraries(lwr_fri rtt-lwr_fri-typekit )
 
 target_link_libraries(lwr_fri_rt rtdm)
+target_link_libraries(lwr_fri_rt rtt-lwr_fri-typekit )
 
 # Generates the typekit which defines float32[7]
 orocos_typekit(lwr_fri_typekit lwr_fri-typekit.cpp)

@@ -34,6 +34,8 @@
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/Wrench.h>
 
+#include <lwr_fri/typekit/Types.hpp>
+#include <kuka_lwr_fri/typekit/Types.hpp>
 
 #include <friComm.h>
 
@@ -66,6 +68,8 @@ private:
         geometry_msgs::Twist m_cartTwist;
         geometry_msgs::Wrench m_cartWrench;
 
+	lwr_fri::CartesianImpedance m_cartImp;
+
 	tFriKrlData m_fromKRL;
 	tFriKrlData m_toKRL;
 	//Eigen::Matrix<double,7,7> m_massTmp; Not correct so useless
@@ -97,13 +101,17 @@ private:
 	//RTT::OutputPort<Eigen::MatrixXd > massMatrixPort;
 	//RTT::OutputPort<std::vector<double> > gravityPort;
 
+	lwr_fri::FriJointImpedance m_fri_joint_impedance;
+
 	InputPort<std::vector<double> > m_jntPosPort;
         InputPort<std::vector<double> > m_jntVelPort;
         InputPort<geometry_msgs::Pose> m_cartPosPort;
         InputPort<geometry_msgs::Twist> m_cartTwistPort;
 	InputPort<std::vector<double> > m_addJntTrqPort;
         InputPort<geometry_msgs::Wrench> m_addTcpWrenchPort;
+        InputPort<lwr_fri::FriJointImpedance> m_jntImpedancePort;
         //InputPort<JointImpedances> m_jntImpedancePort;
+        InputPort<lwr_fri::CartesianImpedance> m_cartImpedancePort;
         //InputPort<CartesianImpedance> m_cartImpedancePort;
 
 	int m_local_port,m_socket,m_remote_port, m_control_mode;

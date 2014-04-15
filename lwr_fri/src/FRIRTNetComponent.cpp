@@ -71,8 +71,8 @@ FRIRTNetComponent::FRIRTNetComponent(const std::string& name) :
 	this->addPort("desCartTwist", m_cartTwistPort);
 	this->addPort("desAddJntTrq", m_addJntTrqPort);
 	this->addPort("desAddTcpWrench", m_addTcpWrenchPort);
-	//this->addPort("desJntImpedance", m_jntImpedancePort);
-	//this->addPort("desCartImpedance", m_cartImpedancePort);
+	this->addPort("desJntImpedance", m_jntImpedancePort);
+	this->addPort("desCartImpedance", m_cartImpedancePort);
 
 	this->addProperty("local_port", m_local_port);
 	this->addProperty("control_mode", m_control_mode).doc("1=JntPos, 2=JntVel, 3=JntTrq, 4=CartPos, 5=CartForce, 6=CartTwist, 7=PosTrq(object picking)");
@@ -236,6 +236,9 @@ void FRIRTNetComponent::updateHook() {
 
 		///TODO: How are we choosing this? -> only change in monitor mode
 		if (m_msr_data.intf.state == FRI_STATE_MON) {
+
+/////////////////////////////  Ajout d'un msg de debug pour vérifier le timing
+			log(Debug)<<"lwr executes"<<endlog();
 			if (m_control_mode == 1 || m_control_mode == 2) {
 				m_cmd_data.cmd.cmdFlags = FRI_CMD_JNTPOS;
 				for (unsigned int i = 0; i < LBR_MNJ; i++)
@@ -255,16 +258,37 @@ void FRIRTNetComponent::updateHook() {
 			} else if (m_control_mode == 7){ // mode 7 added to silmutaneously perform joint position and torque control, joint impedance mode
 				m_cmd_data.cmd.cmdFlags=FRI_CMD_JNTPOS;
 				m_cmd_data.cmd.cmdFlags|=FRI_CMD_JNTTRQ;
-				m_cmd_data.cmd.cmdFlags |= FRI_CMD_JNTSTIFF | FRI_CMD_JNTDAMP;
-				for (unsigned int i = 0; i < LBR_MNJ; i++){
-					m_cmd_data.cmd.jntStiffness[i] = 2000;
-					m_cmd_data.cmd.jntDamping[i] = 0.7;
-				}
 				for (unsigned int i = 0; i < LBR_MNJ; i++)
 					m_cmd_data.cmd.jntPos[i] = m_msr_data.data.cmdJntPos[i];
 				for (unsigned int i = 0; i < LBR_MNJ; i++)
 					m_cmd_data.cmd.addJntTrq[i] = 0.0;
 			}
+
+			/***** adding joint impedance control for control modes 3 and 7 *****/
+                	if (m_control_mode==3 || m_control_mode<=7){
+                        	m_cmd_data.cmd.cmdFlags |= FRI_CMD_JNTSTIFF | FRI_CMD_JNTDAMP;
+                               	for (unsigned int i = 0; i < LBR_MNJ; i++){
+                                       	m_cmd_data.cmd.jntStiffness[i] = 250;
+                                       	m_cmd_data.cmd.jntDamping[i] = 0.7;
+                               	}
+                	}
+                	/*************************            ************************/
+
+			 /***** adding cartesian impedance control for control modes 4 to 6 *****/
+	                if (m_control_mode>=4 && m_control_mode<=6){
+        	                m_cmd_data.cmd.cmdFlags |= FRI_CMD_CARTSTIFF | FRI_CMD_CARTDAMP;
+				for(unsigned int i=0; i < FRI_CART_VEC/2 ; i++){
+					//Linear part;
+					m_cmd_data.cmd.cartStiffness[i]=100;
+					m_cmd_data.cmd.cartDamping[i]=0.1;
+					//rotational part;
+					m_cmd_data.cmd.cartStiffness[i+FRI_CART_VEC/2]=10;
+					m_cmd_data.cmd.cartDamping[i+FRI_CART_VEC/2]=0.1;
+				}
+                	}
+                	/*************************            ************************/
+
+
 		}
 		//Only send if state is in FRI_STATE_CMD
 		if (m_msr_data.intf.state == FRI_STATE_CMD) {
@@ -315,7 +339,7 @@ void FRIRTNetComponent::updateHook() {
 					m_cmd_data.cmd.addTcpFT[5] = m_cartWrench.torque.x;
 				}
 			} else if (m_control_mode == 6) {
-			  m_cmd_data.cmd.cmdFlags = FRI_CMD_CARTPOS;
+			  	m_cmd_data.cmd.cmdFlags = FRI_CMD_CARTPOS;
 				if (NewData == m_cartTwistPort.read(m_cartTwist)) {
 				  KDL::Twist t;
 				  tf::TwistMsgToKDL (m_cartTwist, t);
@@ -351,11 +375,6 @@ void FRIRTNetComponent::updateHook() {
 			}else if  (m_control_mode==7){ //mode 7 added, send joint position command + torque offset (joint impedance control)
 				m_cmd_data.cmd.cmdFlags=FRI_CMD_JNTPOS;
 				m_cmd_data.cmd.cmdFlags|=FRI_CMD_JNTTRQ;
-				m_cmd_data.cmd.cmdFlags |= FRI_CMD_JNTSTIFF | FRI_CMD_JNTDAMP;
-				for (unsigned int i = 0; i < LBR_MNJ; i++){
-					m_cmd_data.cmd.jntStiffness[i] = 2000;
-					m_cmd_data.cmd.jntDamping[i] = 0.7;
-				}
 				if (NewData == m_jntPosPort.read(m_jntPos))
 					for (unsigned int i = 0; i < LBR_MNJ; i++)
 						m_cmd_data.cmd.jntPos[i] = m_jntPos[i];
@@ -364,6 +383,38 @@ void FRIRTNetComponent::updateHook() {
 						m_cmd_data.cmd.addJntTrq[i]
 								= m_jntTorques[i];
 			}
+			/***** adding joint impedance control for control modes 3 and 7 *****/
+			if (m_control_mode==3 || m_control_mode<=7){
+				m_cmd_data.cmd.cmdFlags |= FRI_CMD_JNTSTIFF | FRI_CMD_JNTDAMP;
+				if(m_jntImpedancePort.read(m_fri_joint_impedance)==NewData){
+	                        	for (unsigned int i = 0; i < LBR_MNJ; i++){
+        		                	m_cmd_data.cmd.jntStiffness[i] = m_fri_joint_impedance.stiffness[i];
+	                	       		m_cmd_data.cmd.jntDamping[i] = m_fri_joint_impedance.damping[i];
+                                	}
+                        	}
+			}
+			/*************************            ************************/
+
+			/***** adding cartesian impedance control for control modes 4 to 6 *****/
+			if (m_control_mode>=4 && m_control_mode<=6){
+				m_cmd_data.cmd.cmdFlags |= FRI_CMD_CARTSTIFF | FRI_CMD_CARTDAMP;
+				if(m_cartImpedancePort.read(m_cartImp)==NewData){
+					m_cmd_data.cmd.cartStiffness[0]=m_cartImp.stiffness.linear.x;
+					m_cmd_data.cmd.cartStiffness[1]=m_cartImp.stiffness.linear.y;
+					m_cmd_data.cmd.cartStiffness[2]=m_cartImp.stiffness.linear.z;
+					m_cmd_data.cmd.cartStiffness[5]=m_cartImp.stiffness.angular.x;
+					m_cmd_data.cmd.cartStiffness[4]=m_cartImp.stiffness.angular.y;
+					m_cmd_data.cmd.cartStiffness[3]=m_cartImp.stiffness.angular.z;
+					m_cmd_data.cmd.cartDamping[0]=m_cartImp.damping.linear.x;
+					m_cmd_data.cmd.cartDamping[1]=m_cartImp.damping.linear.y;
+					m_cmd_data.cmd.cartDamping[2]=m_cartImp.damping.linear.z;
+					m_cmd_data.cmd.cartDamping[5]=m_cartImp.damping.angular.x;
+					m_cmd_data.cmd.cartDamping[4]=m_cartImp.damping.angular.y;
+					m_cmd_data.cmd.cartDamping[3]=m_cartImp.damping.angular.z;
+                        	}
+			}
+			/*************************            ************************/
+
 		}
 
 		m_cmd_data.krl = m_toKRL;
