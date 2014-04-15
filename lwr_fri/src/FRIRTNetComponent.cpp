@@ -44,7 +44,9 @@ namespace lwr_fri {
 using namespace RTT;
 
 FRIRTNetComponent::FRIRTNetComponent(const std::string& name) :
-	TaskContext(name, PreOperational){
+	TaskContext(name, PreOperational),
+	m_jac(LBR_MNJ)
+{
 
 	this->addAttribute("fromKRL", m_fromKRL);
 	this->addAttribute("toKRL", m_toKRL);
@@ -73,6 +75,9 @@ FRIRTNetComponent::FRIRTNetComponent(const std::string& name) :
 	this->addPort("desAddTcpWrench", m_addTcpWrenchPort);
 	this->addPort("desJntImpedance", m_jntImpedancePort);
 	this->addPort("desCartImpedance", m_cartImpedancePort);
+	this->addPort("Jacobian", jacobianPort);
+	this->addPort("massMatrix_o", massMatrixPort);
+	this->addPort("gravity_o", gravityPort);
 
 	this->addProperty("local_port", m_local_port);
 	this->addProperty("control_mode", m_control_mode).doc("1=JntPos, 2=JntVel, 3=JntTrq, 4=CartPos, 5=CartForce, 6=CartTwist, 7=PosTrq(object picking)");
@@ -106,6 +111,8 @@ bool FRIRTNetComponent::configureHook() {
 	// presize the events port
 	m_events.setDataSample("         10        20        30");
 	fri_state_last = 0;
+	jacobianPort.setDataSample(m_jac);
+	gravity.resize(LBR_MNJ,0.0);
 
 	m_socket = rt_dev_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	rt_dev_setsockopt(m_socket, SOL_SOCKET, SO_REUSEADDR, 0, 0);
@@ -149,6 +156,21 @@ void FRIRTNetComponent::updateHook() {
 			fri_state_last = m_msr_data.intf.state;
 		}
 
+		/************ Jacobian isir add *************/
+		for ( int i = 0; i < FRI_CART_VEC; i++)
+		    for ( int j = 0; j < LBR_MNJ; j++)
+				m_jac(i,j) = m_msr_data.data.jacobian[i*LBR_MNJ+j];
+		//Kuka uses Tx, Ty, Tz, Rz, Ry, Rx convention, so we need to swap Rz and Rx
+		m_jac.data.row(3).swap(m_jac.data.row(5));
+		jacobianPort.write(m_jac);
+		/******************** ***********************/
+		/************ MassMatrix isir add *************/		
+		for ( unsigned int i = 0; i < LBR_MNJ; i++)
+            		for ( unsigned int j = 0; j < LBR_MNJ; j++)
+                		mass_matrix(i, j) = m_msr_data.data.massMatrix[i*LBR_MNJ+j];
+        	massMatrixPort.write(mass_matrix);
+		/******************** ***********************/
+		
 		m_RobotStatePort.write(m_msr_data.robot);
 		m_FriStatePort.write(m_msr_data.intf);
 
@@ -160,6 +182,13 @@ void FRIRTNetComponent::updateHook() {
 		 */
 
 		m_fromKRL = m_msr_data.krl;
+
+		/************** isir add **************/
+		for (unsigned int i = 0; i < LBR_MNJ; i++)
+			gravity[i] = m_msr_data.data.gravity[i];
+		gravityPort.write(gravity);
+		/****************** ********************/
+
 		for (unsigned int i = 0; i < LBR_MNJ; i++)
 			m_jntPos[i] = m_msr_data.data.msrJntPos[i];
 		m_msrJntPosPort.write(m_jntPos);

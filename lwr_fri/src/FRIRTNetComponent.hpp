@@ -69,6 +69,7 @@ private:
         geometry_msgs::Wrench m_cartWrench;
 
 	lwr_fri::CartesianImpedance m_cartImp;
+	Eigen::Matrix<double,7,7> mass_matrix;
 
 	tFriKrlData m_fromKRL;
 	tFriKrlData m_toKRL;
@@ -97,9 +98,10 @@ private:
 	OutputPort<std::vector<double> >   m_msrJntTrqPort;
 	OutputPort<std::vector<double> >   m_estExtJntTrqPort;
         OutputPort<geometry_msgs::Wrench> m_estExtTcpWrenchPort;
-	//RTT::OutputPort<KDL::Jacobian> jacobianPort;
-	//RTT::OutputPort<Eigen::MatrixXd > massMatrixPort;
-	//RTT::OutputPort<std::vector<double> > gravityPort;
+	
+	RTT::OutputPort<KDL::Jacobian> jacobianPort;
+	RTT::OutputPort<Eigen::MatrixXd > massMatrixPort;
+	RTT::OutputPort<std::vector<double> > gravityPort;
 
 	lwr_fri::FriJointImpedance m_fri_joint_impedance;
 
@@ -119,6 +121,9 @@ private:
 	const char* m_remote_address;
 	struct sockaddr m_remote_addr;
 	uint16_t counter, fri_state_last;
+
+	KDL::Jacobian m_jac;
+	std::vector<double> gravity;
 };
 
 }//Namespace LWR
