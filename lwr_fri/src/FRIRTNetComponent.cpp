@@ -64,6 +64,7 @@ FRIRTNetComponent::FRIRTNetComponent(const std::string& name) :
 	this->addPort("msrCartPos", m_msrCartPosPort);
 	this->addPort("cmdCartPos", m_cmdCartPosPort);
 	this->addPort("cmdCartPosFriOffset", m_cmdCartPosFriOffsetPort);
+	this->addPort("msrJntVel", m_msrJntVelPort);
 	this->addPort("msrJntTrq", m_msrJntTrqPort);
 	this->addPort("estExtJntTrq", m_estExtJntTrqPort);
 	this->addPort("estExtTcpWrench", m_estExtTcpWrenchPort);
@@ -174,6 +175,12 @@ void FRIRTNetComponent::updateHook() {
 		m_RobotStatePort.write(m_msr_data.robot);
 		m_FriStatePort.write(m_msr_data.intf);
 
+		/*************** msr joints velocities port isir add ***********/
+		for (unsigned int i = 0; i < LBR_MNJ; i++) {
+			m_msrVelocities[i]=((double)m_msr_data.data.msrJntPos[i] - m_previousPos[i])/(double)m_msr_data.intf.desiredMsrSampleTime;
+		}
+		m_msrJntVelPort.write(m_msrVelocities);
+		/**************************** **********************************/
 		/*
 		 if(msr_data.robot.power==0){
 		 log(Warning)<<"Robot power down!! Stopping!!"<<endlog();

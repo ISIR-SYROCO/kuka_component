@@ -95,6 +95,7 @@ private:
 	OutputPort<geometry_msgs::Pose>  m_msrCartPosPort;
 	OutputPort<geometry_msgs::Pose>  m_cmdCartPosPort;
 	OutputPort<geometry_msgs::Pose>  m_cmdCartPosFriOffsetPort;
+	OutputPort<std::vector<double> > m_msrJntVelPort;
 	OutputPort<std::vector<double> >   m_msrJntTrqPort;
 	OutputPort<std::vector<double> >   m_estExtJntTrqPort;
         OutputPort<geometry_msgs::Wrench> m_estExtTcpWrenchPort;
@@ -115,6 +116,9 @@ private:
         //InputPort<JointImpedances> m_jntImpedancePort;
         InputPort<lwr_fri::CartesianImpedance> m_cartImpedancePort;
         //InputPort<CartesianImpedance> m_cartImpedancePort;
+
+	std::vector<double> m_previousPos[LBR_MNJ];
+	std::vector<double> m_msrVelocities[LBR_MNJ];	
 
 	int m_local_port,m_socket,m_remote_port, m_control_mode;
 
