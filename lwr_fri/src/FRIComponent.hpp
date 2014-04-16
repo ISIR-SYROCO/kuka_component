@@ -129,8 +129,9 @@ private:
 	struct sockaddr_in m_remote_addr;
 	socklen_t m_sock_addr_len;
 
-	std::vector<double> m_previousPos[LBR_MNJ];
-	std::vector<double> m_msrVelocities[LBR_MNJ];
+	std::vector<double> m_previousPos;
+	std::vector<double> m_currentPos;
+	std::vector<double> m_msrVelocities;
 
 	std::string m_mon_mode, m_cmd_mode, m_unknown_mode;
 	bool m_init;

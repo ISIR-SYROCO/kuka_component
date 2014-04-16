@@ -117,8 +117,8 @@ private:
         InputPort<lwr_fri::CartesianImpedance> m_cartImpedancePort;
         //InputPort<CartesianImpedance> m_cartImpedancePort;
 
-	std::vector<double> m_previousPos[LBR_MNJ];
-	std::vector<double> m_msrVelocities[LBR_MNJ];	
+	std::vector<double> m_previousPos;
+	std::vector<double> m_msrVelocities;
 
 	int m_local_port,m_socket,m_remote_port, m_control_mode;
 

@@ -86,6 +86,8 @@ FRIRTNetComponent::FRIRTNetComponent(const std::string& name) :
 	m_jntPos.resize(LBR_MNJ);
 	m_jntVel.resize(LBR_MNJ);
 	m_jntTorques.resize(LBR_MNJ);
+	m_previousPos.resize(LBR_MNJ);
+	m_msrVelocities.resize(LBR_MNJ);
 
 }
 
@@ -175,12 +177,6 @@ void FRIRTNetComponent::updateHook() {
 		m_RobotStatePort.write(m_msr_data.robot);
 		m_FriStatePort.write(m_msr_data.intf);
 
-		/*************** msr joints velocities port isir add ***********/
-		for (unsigned int i = 0; i < LBR_MNJ; i++) {
-			m_msrVelocities[i]=((double)m_msr_data.data.msrJntPos[i] - m_previousPos[i])/(double)m_msr_data.intf.desiredMsrSampleTime;
-		}
-		m_msrJntVelPort.write(m_msrVelocities);
-		/**************************** **********************************/
 		/*
 		 if(msr_data.robot.power==0){
 		 log(Warning)<<"Robot power down!! Stopping!!"<<endlog();
@@ -199,6 +195,13 @@ void FRIRTNetComponent::updateHook() {
 		for (unsigned int i = 0; i < LBR_MNJ; i++)
 			m_jntPos[i] = m_msr_data.data.msrJntPos[i];
 		m_msrJntPosPort.write(m_jntPos);
+
+		/*************** msr joints velocities port isir add ***********/
+		for (unsigned int i = 0; i < LBR_MNJ; i++) {
+			m_msrVelocities[i]=(m_jntPos[i]-m_previousPos[i])/(double)m_msr_data.intf.desiredMsrSampleTime;
+		}
+		m_msrJntVelPort.write(m_msrVelocities);
+		/**************************** **********************************/
 
 		for (unsigned int i = 0; i < LBR_MNJ; i++)
 			m_jntPos[i] = m_msr_data.data.cmdJntPos[i];

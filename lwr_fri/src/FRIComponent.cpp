@@ -83,9 +83,9 @@ using namespace RTT;
 	m_mon_mode = "e_fri_mon_mode";
 	m_cmd_mode = "e_fri_cmd_mode";
 	m_unknown_mode = "e_fri_unkown_mode";
-	m_previousPos.assign(LBR_MNJ,0.0);
-	m_msrVelocities(LBR_MNJ,0.0);
-
+	m_previousPos.resize(LBR_MNJ);
+	m_msrVelocities.resize(LBR_MNJ);
+	m_currentPos.resize(LBR_MNJ);
 
 }
 
@@ -200,11 +200,18 @@ void FRIComponent::updateHook() {
 		m_joint_states.effort.assign(m_msr_data.data.estExtJntTrq,
 				m_msr_data.data.estExtJntTrq + LBR_MNJ);
 		/********** isir add, msr jnt velocities *********/
+
 		for (unsigned int i = 0; i < LBR_MNJ; i++) {
-			m_msrVelocities[i]=((double)m_msr_data.data.msrJntPos[i] - m_previousPos[i])/(double)m_msr_data.intf.desiredMsrSampleTime;
+			m_currentPos[i]=m_msr_data.data.msrJntPos[i];
 		}
-		m_joint_states.velocity.assign( m_msrVelocities,
-				m_msrVelocities + LBR_MNJ );
+		for (unsigned int i = 0; i < LBR_MNJ; i++) {
+			m_msrVelocities[i]=(m_currentPos[i]-m_previousPos[i])/(double)m_msr_data.intf.desiredMsrSampleTime;
+		}
+		for (unsigned int i = 0; i < LBR_MNJ; i++) {
+			m_joint_states.velocity[i]=m_msrVelocities[i];
+		}
+		//m_joint_states.velocity.assign( m_msrVelocities,
+		//		m_msrVelocities + LBR_MNJ );
 		/************************* ***********************/
 		m_joint_states.header.stamp.fromNSec ( RTT::os::TimeService::Instance()->getNSecs() );
 		//m_joint_states.header.stamp.fromSec( m_msr_data.intf.timestamp ); --> only accurate to 1/10th of a second !!!
