@@ -152,7 +152,7 @@ void FRIRTNetComponent::updateHook() {
 		if (fri_state_last != m_msr_data.intf.state) {
 			if(m_msr_data.intf.state == FRI_STATE_MON)
 				m_events.write("e_fri_mon_mode");
-			else if(m_msr_data.intf.state == FRI_STATE_CMD) 
+			else if(m_msr_data.intf.state == FRI_STATE_CMD)
 				m_events.write("e_fri_cmd_mode");
 			else
 				m_events.write("e_fri_unkown_mode");
@@ -167,13 +167,13 @@ void FRIRTNetComponent::updateHook() {
 		m_jac.data.row(3).swap(m_jac.data.row(5));
 		jacobianPort.write(m_jac);
 		/******************** ***********************/
-		/************ MassMatrix isir add *************/		
+		/************ MassMatrix isir add *************/
 		for ( unsigned int i = 0; i < LBR_MNJ; i++)
             		for ( unsigned int j = 0; j < LBR_MNJ; j++)
                 		mass_matrix(i, j) = m_msr_data.data.massMatrix[i*LBR_MNJ+j];
         	massMatrixPort.write(mass_matrix);
 		/******************** ***********************/
-		
+
 		m_RobotStatePort.write(m_msr_data.robot);
 		m_FriStatePort.write(m_msr_data.intf);
 
@@ -199,6 +199,7 @@ void FRIRTNetComponent::updateHook() {
 		/*************** msr joints velocities port isir add ***********/
 		for (unsigned int i = 0; i < LBR_MNJ; i++) {
 			m_msrVelocities[i]=(m_jntPos[i]-m_previousPos[i])/(double)m_msr_data.intf.desiredMsrSampleTime;
+			m_previousPos[i]=m_jntPos[i];
 		}
 		m_msrJntVelPort.write(m_msrVelocities);
 		/**************************** **********************************/
@@ -308,7 +309,7 @@ void FRIRTNetComponent::updateHook() {
                         	m_cmd_data.cmd.cmdFlags |= FRI_CMD_JNTSTIFF | FRI_CMD_JNTDAMP;
                                	for (unsigned int i = 0; i < LBR_MNJ; i++){
                                        	m_cmd_data.cmd.jntStiffness[i] = 250;
-                                       	m_cmd_data.cmd.jntDamping[i] = 0.7;
+                                       	m_cmd_data.cmd.jntDamping[i] = 0.1; //default value 0.7
                                	}
                 	}
                 	/*************************            ************************/
