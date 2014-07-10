@@ -33,6 +33,11 @@ ros_generate_rtt_typekit(lwr_fri)
 # Set the CMAKE_PREFIX_PATH in case you're not using Orocos through ROS
 # for helping these find commands find RTT.
 find_package(Orocos-RTT REQUIRED ${RTT_HINTS})
+find_package(cmake_modules REQUIRED)
+find_package(Xenomai REQUIRED)
+
+include_directories(${Xenomai_INCLUDE_DIRS})
+link_directories(${Xenomai_LIBRARIES})
 
 # Defines the orocos_* cmake macros. See that file for additional
 # documentation.

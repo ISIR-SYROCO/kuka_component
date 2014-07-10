@@ -17,6 +17,7 @@
   <depend package="kuka_lwr_fri"/>
   <depend package="rtt_motion_control_msgs"/>
 
+  <build_depend>cmake_modules</build_depend>
 </package>
 
 

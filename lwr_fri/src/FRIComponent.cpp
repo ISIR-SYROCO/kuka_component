@@ -33,6 +33,8 @@
 #include <arpa/inet.h>
 #include <rtt/os/TimeService.hpp>
 
+#include <posix/pthread.h>
+
 namespace lwr_fri {
 
 using namespace RTT;
