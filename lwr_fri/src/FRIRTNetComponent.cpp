@@ -314,6 +314,15 @@ void FRIRTNetComponent::updateHook() {
                 }
             }    
             */
+            if ((m_control_mode==3) || (m_control_mode==7)){
+                m_cmd_data.cmd.cmdFlags |= FRI_CMD_JNTSTIFF | FRI_CMD_JNTDAMP;
+                if(m_jntImpedancePort.read(m_fri_joint_impedance)==NewData){
+                    for (unsigned int i = 0; i < LBR_MNJ; i++){
+                        m_cmd_data.cmd.jntStiffness[i] = m_fri_joint_impedance.stiffness[i];
+                        m_cmd_data.cmd.jntDamping[i] = m_fri_joint_impedance.damping[i];
+                    }
+                }
+            }
             /*************************            ************************/
 
             /***** adding cartesian impedance control for control modes 4 to 6 *****/
