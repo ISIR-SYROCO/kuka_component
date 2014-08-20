@@ -33,7 +33,9 @@
 #include <arpa/inet.h>
 #include <rtt/os/TimeService.hpp>
 
+#ifdef HAVE_XENOMAI
 #include <posix/pthread.h>
+#endif
 
 namespace lwr_fri {
 
@@ -140,14 +142,18 @@ bool FRIComponent::configureHook() {
 }
 
 bool FRIComponent::startHook() {
+#ifdef HAVE_XENOMAI
 	pthread_set_mode_np(PTHREAD_WARNSW, 0);
+#endif
 	counter = 0;
 	m_init = true;
 	return true;
 }
 
 void FRIComponent::updateHook() {
+#ifdef HAVE_XENOMAI
 	pthread_set_mode_np(PTHREAD_WARNSW, 0);
+#endif
 	//Read:
 	if (fri_recv() == 0) {
 
