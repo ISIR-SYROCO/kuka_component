@@ -312,17 +312,29 @@ void FRIRTNetComponent::updateHook() {
                     m_cmd_data.cmd.jntStiffness[i] = 250;
                     m_cmd_data.cmd.jntDamping[i] = 0.1; //default value 0.7
                 }
-            }    
-            */
+            } 
+	    */   
+            
             if ((m_control_mode==3) || (m_control_mode==7)){
                 m_cmd_data.cmd.cmdFlags |= FRI_CMD_JNTSTIFF | FRI_CMD_JNTDAMP;
-                if(m_jntImpedancePort.read(m_fri_joint_impedance)==NewData){
-                    for (unsigned int i = 0; i < LBR_MNJ; i++){
-                        m_cmd_data.cmd.jntStiffness[i] = m_fri_joint_impedance.stiffness[i];
-                        m_cmd_data.cmd.jntDamping[i] = m_fri_joint_impedance.damping[i];
-                    }
-                }
-            }
+                if(m_jntImpedancePort.connected()){
+		   if(m_jntImpedancePort.read(m_fri_joint_impedance)==NewData){
+                      for (unsigned int i = 0; i < LBR_MNJ; i++){
+                          m_cmd_data.cmd.jntStiffness[i] = m_fri_joint_impedance.stiffness[i];
+                          m_cmd_data.cmd.jntDamping[i] = m_fri_joint_impedance.damping[i];
+                      }
+		   } 
+		}
+		else{
+		     m_cmd_data.cmd.cmdFlags |= FRI_CMD_JNTSTIFF | FRI_CMD_JNTDAMP;
+		     for (unsigned int i = 0; i < LBR_MNJ; i++){
+		         m_cmd_data.cmd.jntStiffness[i] = 250;
+                         m_cmd_data.cmd.jntDamping[i] = 0.7;
+		     }
+		}
+		
+	     }
+	    
             /*************************            ************************/
 
             /***** adding cartesian impedance control for control modes 4 to 6 *****/
