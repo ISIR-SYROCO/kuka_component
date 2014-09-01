@@ -101,7 +101,7 @@ private:
         OutputPort<geometry_msgs::Wrench> m_estExtTcpWrenchPort;
 	
 	RTT::OutputPort<KDL::Jacobian> jacobianPort;
-	RTT::OutputPort<Eigen::MatrixXd > massMatrixPort;
+        RTT::OutputPort<Eigen::Matrix<double, 7, 7> > massMatrixPort;
 	RTT::OutputPort<std::vector<double> > gravityPort;
 
 	lwr_fri::FriJointImpedance m_fri_joint_impedance;
