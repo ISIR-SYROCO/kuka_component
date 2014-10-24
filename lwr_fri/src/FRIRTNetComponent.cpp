@@ -318,51 +318,35 @@ void FRIRTNetComponent::updateHook() {
             if ((m_control_mode==3) || (m_control_mode==7)){
                 m_cmd_data.cmd.cmdFlags |= FRI_CMD_JNTSTIFF | FRI_CMD_JNTDAMP;
                 if(m_jntImpedancePort.connected()){
-                    if(m_jntImpedancePort.read(m_fri_joint_impedance)==NewData){
-                        for (unsigned int i = 0; i < LBR_MNJ; i++){
-                            m_cmd_data.cmd.jntStiffness[i] = m_fri_joint_impedance.stiffness[i];
-                            m_cmd_data.cmd.jntDamping[i] = m_fri_joint_impedance.damping[i];
-                        }
-                    } 
-                }
-                else{
-                    m_cmd_data.cmd.cmdFlags |= FRI_CMD_JNTSTIFF | FRI_CMD_JNTDAMP;
-                    for (unsigned int i = 0; i < LBR_MNJ; i++){
-                        m_cmd_data.cmd.jntStiffness[i] = 250;
-                        m_cmd_data.cmd.jntDamping[i] = 0.7;
-                    }
-                }
-
-            }
+		   if(m_jntImpedancePort.read(m_fri_joint_impedance)==NewData){
+                      for (unsigned int i = 0; i < LBR_MNJ; i++){
+                          m_cmd_data.cmd.jntStiffness[i] = m_fri_joint_impedance.stiffness[i];
+                          m_cmd_data.cmd.jntDamping[i] = m_fri_joint_impedance.damping[i];
+                      }
+		   } 
+		}
+		else{
+		     m_cmd_data.cmd.cmdFlags |= FRI_CMD_JNTSTIFF | FRI_CMD_JNTDAMP;
+		     for (unsigned int i = 0; i < LBR_MNJ; i++){
+		         m_cmd_data.cmd.jntStiffness[i] = 250;
+                         m_cmd_data.cmd.jntDamping[i] = 0.7;
+		     }
+		}
+		
+	     }
 	    
             /*************************            ************************/
 
             /***** adding cartesian impedance control for control modes 4 to 6 *****/
             if (m_control_mode>=4 && m_control_mode<=6){
                 m_cmd_data.cmd.cmdFlags |= FRI_CMD_CARTSTIFF | FRI_CMD_CARTDAMP;
-				if(m_cartImpedancePort.read(m_cartImp)==NewData){
-					m_cmd_data.cmd.cartStiffness[0]=m_cartImp.stiffness.linear.x;
-					m_cmd_data.cmd.cartStiffness[1]=m_cartImp.stiffness.linear.y;
-					m_cmd_data.cmd.cartStiffness[2]=m_cartImp.stiffness.linear.z;
-					m_cmd_data.cmd.cartStiffness[5]=m_cartImp.stiffness.angular.x;
-					m_cmd_data.cmd.cartStiffness[4]=m_cartImp.stiffness.angular.y;
-					m_cmd_data.cmd.cartStiffness[3]=m_cartImp.stiffness.angular.z;
-					m_cmd_data.cmd.cartDamping[0]=m_cartImp.damping.linear.x;
-					m_cmd_data.cmd.cartDamping[1]=m_cartImp.damping.linear.y;
-					m_cmd_data.cmd.cartDamping[2]=m_cartImp.damping.linear.z;
-					m_cmd_data.cmd.cartDamping[5]=m_cartImp.damping.angular.x;
-					m_cmd_data.cmd.cartDamping[4]=m_cartImp.damping.angular.y;
-					m_cmd_data.cmd.cartDamping[3]=m_cartImp.damping.angular.z;
-                }
-                else{
-                    for(unsigned int i=0; i < FRI_CART_VEC/2 ; i++){
-                        //Linear part;
-                        m_cmd_data.cmd.cartStiffness[i]=100;
-                        m_cmd_data.cmd.cartDamping[i]=0.1;
-                        //rotational part;
-                        m_cmd_data.cmd.cartStiffness[i+FRI_CART_VEC/2]=10;
-                        m_cmd_data.cmd.cartDamping[i+FRI_CART_VEC/2]=0.1;
-                    }
+                for(unsigned int i=0; i < FRI_CART_VEC/2 ; i++){
+                    //Linear part;
+                    m_cmd_data.cmd.cartStiffness[i]=100;
+                    m_cmd_data.cmd.cartDamping[i]=0.1;
+                    //rotational part;
+                    m_cmd_data.cmd.cartStiffness[i+FRI_CART_VEC/2]=10;
+                    m_cmd_data.cmd.cartDamping[i+FRI_CART_VEC/2]=0.1;
                 }
             }
             /*************************            ************************/
@@ -462,6 +446,38 @@ void FRIRTNetComponent::updateHook() {
                         m_cmd_data.cmd.addJntTrq[i]
                             = m_jntTorques[i];
             }
+            /***** adding joint impedance control for control modes 3 and 7 *****/
+            if ((m_control_mode==3) || (m_control_mode==7)){
+                m_cmd_data.cmd.cmdFlags |= FRI_CMD_JNTSTIFF | FRI_CMD_JNTDAMP;
+                if(m_jntImpedancePort.read(m_fri_joint_impedance)==NewData){
+                    for (unsigned int i = 0; i < LBR_MNJ; i++){
+                        m_cmd_data.cmd.jntStiffness[i] = m_fri_joint_impedance.stiffness[i];
+                        m_cmd_data.cmd.jntDamping[i] = m_fri_joint_impedance.damping[i];
+                    }
+                }
+            }
+			/*************************            ************************/
+
+			/***** adding cartesian impedance control for control modes 4 to 6 *****/
+			if (m_control_mode>=4 && m_control_mode<=6){
+				m_cmd_data.cmd.cmdFlags |= FRI_CMD_CARTSTIFF | FRI_CMD_CARTDAMP;
+				if(m_cartImpedancePort.read(m_cartImp)==NewData){
+					m_cmd_data.cmd.cartStiffness[0]=m_cartImp.stiffness.linear.x;
+					m_cmd_data.cmd.cartStiffness[1]=m_cartImp.stiffness.linear.y;
+					m_cmd_data.cmd.cartStiffness[2]=m_cartImp.stiffness.linear.z;
+					m_cmd_data.cmd.cartStiffness[5]=m_cartImp.stiffness.angular.x;
+					m_cmd_data.cmd.cartStiffness[4]=m_cartImp.stiffness.angular.y;
+					m_cmd_data.cmd.cartStiffness[3]=m_cartImp.stiffness.angular.z;
+					m_cmd_data.cmd.cartDamping[0]=m_cartImp.damping.linear.x;
+					m_cmd_data.cmd.cartDamping[1]=m_cartImp.damping.linear.y;
+					m_cmd_data.cmd.cartDamping[2]=m_cartImp.damping.linear.z;
+					m_cmd_data.cmd.cartDamping[5]=m_cartImp.damping.angular.x;
+					m_cmd_data.cmd.cartDamping[4]=m_cartImp.damping.angular.y;
+					m_cmd_data.cmd.cartDamping[3]=m_cartImp.damping.angular.z;
+                        	}
+			}
+			/*************************            ************************/
+
 		}
 
 		m_cmd_data.krl = m_toKRL;
